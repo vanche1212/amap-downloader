@@ -92,33 +92,29 @@ jobs:
         echo "构建产物列表："
         ls -la
         
-        # 查找实际生成的可执行文件
+        # 设置目标文件名
         if [ "${{ matrix.os }}" = "windows-latest" ]; then
-          # Windows平台
-          if [ -f "高德地图下载器.exe" ]; then
-            mv "高德地图下载器.exe" "高德地图下载器_${{ matrix.platform }}_${{ matrix.arch }}.exe"
-          elif [ -f "map_downloader_gui.exe" ]; then
-            mv "map_downloader_gui.exe" "高德地图下载器_${{ matrix.platform }}_${{ matrix.arch }}.exe"
-          else
-            # 查找任何.exe文件
-            exe_file=$(ls *.exe | head -1)
-            if [ -n "$exe_file" ]; then
-              mv "$exe_file" "高德地图下载器_${{ matrix.platform }}_${{ matrix.arch }}.exe"
+          target_name="高德地图下载器_${{ matrix.platform }}_${{ matrix.arch }}.exe"
+          # 查找.exe文件并重命名
+          for file in *.exe; do
+            if [ -f "$file" ]; then
+              echo "找到可执行文件: $file"
+              mv "$file" "$target_name"
+              echo "重命名为: $target_name"
+              break
             fi
-          fi
+          done
         else
-          # macOS/Linux平台
-          if [ -f "高德地图下载器" ]; then
-            mv "高德地图下载器" "高德地图下载器_${{ matrix.platform }}_${{ matrix.arch }}"
-          elif [ -f "map_downloader_gui" ]; then
-            mv "map_downloader_gui" "高德地图下载器_${{ matrix.platform }}_${{ matrix.arch }}"
-          else
-            # 查找任何可执行文件（排除目录）
-            exec_file=$(find . -maxdepth 1 -type f -executable | head -1 | sed 's|^\./||')
-            if [ -n "$exec_file" ]; then
-              mv "$exec_file" "高德地图下载器_${{ matrix.platform }}_${{ matrix.arch }}"
+          target_name="高德地图下载器_${{ matrix.platform }}_${{ matrix.arch }}"
+          # 查找可执行文件并重命名
+          for file in *; do
+            if [ -f "$file" ] && [ -x "$file" ] && [[ "$file" != *.* ]]; then
+              echo "找到可执行文件: $file"
+              mv "$file" "$target_name"
+              echo "重命名为: $target_name"
+              break
             fi
-          fi
+          done
         fi
         
         echo "重命名后的文件："
@@ -127,7 +123,7 @@ jobs:
     - name: 上传构建产物
       uses: actions/upload-artifact@v4
       with:
-        name: 高德地图下载器_${{ matrix.platform }}_${{ matrix.arch }}
+        name: amap-downloader-${{ matrix.platform }}-${{ matrix.arch }}
         path: dist/高德地图下载器_${{ matrix.platform }}_${{ matrix.arch }}${{ matrix.executable_suffix }}
 
   release:
