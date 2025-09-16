@@ -56,8 +56,52 @@ jobs:
       run: |
         pyinstaller --onefile --windowed --name "amap-downloader" --hidden-import tkinter --hidden-import tkinter.ttk --hidden-import tkinter.messagebox --hidden-import tkinter.filedialog --hidden-import requests --hidden-import json --hidden-import pathlib --hidden-import threading --hidden-import urllib.parse --hidden-import urllib.request --hidden-import urllib.error --exclude-module matplotlib --exclude-module numpy --exclude-module pandas --exclude-module scipy --exclude-module PIL --exclude-module cv2 --exclude-module tensorflow --exclude-module torch --exclude-module jupyter --exclude-module IPython --add-data "config_example.py;." --add-data "使用说明.md;." map_downloader_gui.py
 
-    - name: 构建可执行文件 (macOS/Linux)
-      if: matrix.os != 'windows-latest'
+    - name: 构建可执行文件 (macOS)
+      if: matrix.os == 'macos-latest'
+      run: |
+        # macOS特殊处理：添加更多隐藏导入和macOS特定选项
+        pyinstaller --onefile --windowed --name "amap-downloader" \
+          --hidden-import tkinter \
+          --hidden-import tkinter.ttk \
+          --hidden-import tkinter.messagebox \
+          --hidden-import tkinter.filedialog \
+          --hidden-import requests \
+          --hidden-import json \
+          --hidden-import pathlib \
+          --hidden-import threading \
+          --hidden-import urllib.parse \
+          --hidden-import urllib.request \
+          --hidden-import urllib.error \
+          --hidden-import ssl \
+          --hidden-import certifi \
+          --hidden-import charset_normalizer \
+          --hidden-import idna \
+          --exclude-module matplotlib \
+          --exclude-module numpy \
+          --exclude-module pandas \
+          --exclude-module scipy \
+          --exclude-module PIL \
+          --exclude-module cv2 \
+          --exclude-module tensorflow \
+          --exclude-module torch \
+          --exclude-module jupyter \
+          --exclude-module IPython \
+          --add-data "config_example.py:." \
+          --add-data "使用说明.md:." \
+          --osx-bundle-identifier "com.amapdownloader.app" \
+          --codesign-identity "-" \
+          map_downloader_gui.py
+
+    - name: 设置macOS可执行文件权限
+      if: matrix.os == 'macos-latest'
+      run: |
+        cd dist
+        chmod +x amap-downloader
+        echo "设置macOS可执行文件权限完成"
+        ls -la amap-downloader
+
+    - name: 构建可执行文件 (Linux)
+      if: matrix.os == 'ubuntu-latest'
       run: |
         pyinstaller --onefile --windowed --name "amap-downloader" \
           --hidden-import tkinter \

@@ -92,16 +92,15 @@ class AmapDownloader:
         if layers:
             params['layers'] = ','.join(layers)
         
-        # 根据API文档：有paths时，location和zoom可选，系统会自动计算最佳视图
+        # 根据API文档：有paths时，location和zoom可选，但我们仍然可以指定它们来控制视图
         if paths:
             params['paths'] = paths
-            # 有paths时不设置location和zoom，让系统自动计算包含所有路径的最佳视图
-        else:
-            # 没有paths时必须指定center和zoom
-            if center:
-                params['location'] = center
-            if zoom:
-                params['zoom'] = zoom
+        
+        # 设置center和zoom参数（如果提供的话）
+        if center:
+            params['location'] = center
+        if zoom:
+            params['zoom'] = zoom
         
         # 只添加非空的可选参数
         if markers:
@@ -180,17 +179,21 @@ class AmapDownloader:
         else:
             print("⚠️  未找到边界路径数据，将显示无边框地图")
         
-        # 下载地图 - 使用自动计算的最佳视图
+        # 下载地图 - 支持多级别缩放
         saved_files = []
+        zoom_levels = AMAP_CONFIG['default_zoom_levels']
         
-        if paths:
-            # 有边界数据时，让系统自动计算最佳视图以完整显示边界
-            print(f"正在下载自适应视图的高清地图（自动包含完整边界范围）...")
+        for zoom in zoom_levels:
+            zoom_desc = ZOOM_LEVELS.get(zoom, f"级别{zoom}")
+            print(f"正在下载缩放级别 {zoom} ({zoom_desc}) 的高清地图...")
             
-            # 获取静态地图 - 不指定center和zoom，让系统自动计算
+            # 获取静态地图 - 同时传递center、zoom和paths参数
+            # 根据API文档，即使有paths，也可以指定zoom来控制缩放级别
             map_data = self.get_static_map(
+                center=district_info['center'],
+                zoom=zoom,
                 size=AMAP_CONFIG['default_map_size'],
-                paths=paths,
+                paths=paths,  # 保留边界显示
                 map_style=map_style,
                 traffic=traffic,
                 labels=labels
@@ -206,7 +209,7 @@ class AmapDownloader:
                 if not labels:
                     style_suffix += "_无标注"
                 
-                filename = f"{district_name}_高清_完整边界{style_suffix}.png"
+                filename = f"{district_name}_高清_zoom_{zoom}_{zoom_desc}{style_suffix}.png"
                 filepath = os.path.join(output_dir, filename)
                 
                 with open(filepath, 'wb') as f:
@@ -215,42 +218,11 @@ class AmapDownloader:
                 file_size_mb = len(map_data) / (1024 * 1024)  # MB
                 print(f"✅ 已保存高清地图: {filename} ({file_size_mb:.2f} MB)")
                 saved_files.append(filepath)
+                
+                # 避免请求过于频繁
+                time.sleep(AMAP_CONFIG['request_delay'])
             else:
-                print(f"❌ 自适应视图地图下载失败")
-        else:
-            # 没有边界数据时，使用传统的多级别下载
-            zoom_levels = AMAP_CONFIG['default_zoom_levels']
-            
-            for zoom in zoom_levels:
-                zoom_desc = ZOOM_LEVELS.get(zoom, f"级别{zoom}")
-                print(f"正在下载缩放级别 {zoom} ({zoom_desc}) 的高清地图...")
-                
-                # 获取静态地图
-                map_data = self.get_static_map(
-                    center=district_info['center'],
-                    zoom=zoom,
-                    size=AMAP_CONFIG['default_map_size'],
-                    map_style=map_style,
-                    traffic=traffic,
-                    labels=labels
-                )
-                
-                if map_data:
-                    # 保存图片
-                    filename = f"{district_name}_高清_zoom_{zoom}_{zoom_desc}.png"
-                    filepath = os.path.join(output_dir, filename)
-                    
-                    with open(filepath, 'wb') as f:
-                        f.write(map_data)
-                    
-                    file_size_mb = len(map_data) / (1024 * 1024)  # MB
-                    print(f"✅ 已保存高清地图: {filename} ({file_size_mb:.2f} MB)")
-                    saved_files.append(filepath)
-                    
-                    # 避免请求过于频繁
-                    time.sleep(AMAP_CONFIG['request_delay'])
-                else:
-                    print(f"❌ 缩放级别 {zoom} 的地图下载失败")
+                print(f"❌ 缩放级别 {zoom} 的地图下载失败")
         
         return saved_files
 

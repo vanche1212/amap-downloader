@@ -105,7 +105,7 @@ class MapDownloaderGUI:
         size_frame.grid(row=0, column=0, sticky=(tk.W, tk.E), pady=5)
         
         ttk.Label(size_frame, text="地图尺寸:").grid(row=0, column=0, sticky=tk.W)
-        self.size_var = tk.StringVar(value="6144*6144")
+        self.size_var = tk.StringVar(value="2048*2048")
         size_combo = ttk.Combobox(size_frame, textvariable=self.size_var, 
                                  values=["2048*2048", "4096*4096", "6144*6144"], 
                                  state="readonly", width=15)
@@ -150,8 +150,7 @@ class MapDownloaderGUI:
         labels_check.grid(row=0, column=2, padx=(10, 0))
         
         # 下载按钮
-        download_btn = ttk.Button(main_frame, text="开始下载", command=self.start_download,
-                                 style="Accent.TButton")
+        download_btn = ttk.Button(main_frame, text="开始下载", command=self.start_download)
         download_btn.grid(row=7, column=0, columnspan=2, pady=20)
         
         # 进度条
@@ -208,8 +207,14 @@ class MapDownloaderGUI:
             messagebox.showerror("错误", "请输入API密钥")
             return False
         
-        if not self.district_name.get().strip():
+        district_name = self.district_name.get().strip()
+        if not district_name:
             messagebox.showerror("错误", "请输入区域名称")
+            return False
+        
+        # 验证区域名称格式（应该是中文地名，不是哈希值）
+        if len(district_name) > 20 or any(c.isdigit() and len(district_name) > 10 for c in district_name):
+            messagebox.showerror("错误", "请输入有效的区域名称（如：吉州区、朝阳区等）")
             return False
         
         if not self.output_dir.get().strip():
