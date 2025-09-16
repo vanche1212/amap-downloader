@@ -54,12 +54,12 @@ jobs:
     - name: 构建可执行文件 (Windows)
       if: matrix.os == 'windows-latest'
       run: |
-        pyinstaller --onefile --windowed --name "高德地图下载器" --hidden-import tkinter --hidden-import tkinter.ttk --hidden-import tkinter.messagebox --hidden-import tkinter.filedialog --hidden-import requests --hidden-import json --hidden-import pathlib --hidden-import threading --hidden-import urllib.parse --hidden-import urllib.request --hidden-import urllib.error --exclude-module matplotlib --exclude-module numpy --exclude-module pandas --exclude-module scipy --exclude-module PIL --exclude-module cv2 --exclude-module tensorflow --exclude-module torch --exclude-module jupyter --exclude-module IPython --add-data "config_example.py;." --add-data "使用说明.md;." map_downloader_gui.py
+        pyinstaller --onefile --windowed --name "amap-downloader" --hidden-import tkinter --hidden-import tkinter.ttk --hidden-import tkinter.messagebox --hidden-import tkinter.filedialog --hidden-import requests --hidden-import json --hidden-import pathlib --hidden-import threading --hidden-import urllib.parse --hidden-import urllib.request --hidden-import urllib.error --exclude-module matplotlib --exclude-module numpy --exclude-module pandas --exclude-module scipy --exclude-module PIL --exclude-module cv2 --exclude-module tensorflow --exclude-module torch --exclude-module jupyter --exclude-module IPython --add-data "config_example.py;." --add-data "使用说明.md;." map_downloader_gui.py
 
     - name: 构建可执行文件 (macOS/Linux)
       if: matrix.os != 'windows-latest'
       run: |
-        pyinstaller --onefile --windowed --name "高德地图下载器" \
+        pyinstaller --onefile --windowed --name "amap-downloader" \
           --hidden-import tkinter \
           --hidden-import tkinter.ttk \
           --hidden-import tkinter.messagebox \
@@ -94,27 +94,29 @@ jobs:
         
         # 设置目标文件名
         if [ "${{ matrix.os }}" = "windows-latest" ]; then
-          target_name="高德地图下载器_${{ matrix.platform }}_${{ matrix.arch }}.exe"
+          target_name="amap-downloader_${{ matrix.platform }}_${{ matrix.arch }}.exe"
           # 查找.exe文件并重命名
-          for file in *.exe; do
-            if [ -f "$file" ]; then
-              echo "找到可执行文件: $file"
-              mv "$file" "$target_name"
-              echo "重命名为: $target_name"
-              break
-            fi
-          done
+          if [ -f "amap-downloader.exe" ]; then
+            echo "找到可执行文件: amap-downloader.exe"
+            mv "amap-downloader.exe" "$target_name"
+            echo "重命名为: $target_name"
+          else
+            echo "错误：未找到 amap-downloader.exe"
+            ls -la
+            exit 1
+          fi
         else
-          target_name="高德地图下载器_${{ matrix.platform }}_${{ matrix.arch }}"
+          target_name="amap-downloader_${{ matrix.platform }}_${{ matrix.arch }}"
           # 查找可执行文件并重命名
-          for file in *; do
-            if [ -f "$file" ] && [ -x "$file" ] && [[ "$file" != *.* ]]; then
-              echo "找到可执行文件: $file"
-              mv "$file" "$target_name"
-              echo "重命名为: $target_name"
-              break
-            fi
-          done
+          if [ -f "amap-downloader" ]; then
+            echo "找到可执行文件: amap-downloader"
+            mv "amap-downloader" "$target_name"
+            echo "重命名为: $target_name"
+          else
+            echo "错误：未找到 amap-downloader"
+            ls -la
+            exit 1
+          fi
         fi
         
         echo "重命名后的文件："
@@ -124,7 +126,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: amap-downloader-${{ matrix.platform }}-${{ matrix.arch }}
-        path: dist/高德地图下载器_${{ matrix.platform }}_${{ matrix.arch }}${{ matrix.executable_suffix }}
+        path: dist/amap-downloader_${{ matrix.platform }}_${{ matrix.arch }}${{ matrix.executable_suffix }}
 
   release:
     needs: build
@@ -150,9 +152,9 @@ jobs:
           ## 高德地图下载器 ${{ github.ref_name }}
           
           ### 📦 下载说明
-          - **Windows用户**: 下载 `高德地图下载器_Windows_x86_64.exe`
-          - **macOS用户**: 下载 `高德地图下载器_macOS_x86_64`
-          - **Linux用户**: 下载 `高德地图下载器_Linux_x86_64`
+          - **Windows用户**: 下载 `amap-downloader_Windows_x86_64.exe`
+          - **macOS用户**: 下载 `amap-downloader_macOS_x86_64`
+          - **Linux用户**: 下载 `amap-downloader_Linux_x86_64`
           
           ### 🚀 使用方法
           1. 下载对应平台的可执行文件
@@ -162,9 +164,9 @@ jobs:
           ### 📋 更新内容
           详细更新内容请查看下方的自动生成说明。
         files: |
-          高德地图下载器_macOS_x86_64
-          高德地图下载器_Windows_x86_64.exe
-          高德地图下载器_Linux_x86_64
+          amap-downloader_macOS_x86_64
+          amap-downloader_Windows_x86_64.exe
+          amap-downloader_Linux_x86_64
         draft: false
         prerelease: false
         generate_release_notes: true
