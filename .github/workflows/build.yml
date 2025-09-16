@@ -149,6 +149,22 @@ jobs:
     - name: 创建发布
       uses: softprops/action-gh-release@v1
       with:
+        name: 高德地图下载器 ${{ github.ref_name }}
+        body: |
+          ## 高德地图下载器 ${{ github.ref_name }}
+          
+          ### 📦 下载说明
+          - **Windows用户**: 下载 `高德地图下载器_Windows_x86_64.exe`
+          - **macOS用户**: 下载 `高德地图下载器_macOS_x86_64`
+          - **Linux用户**: 下载 `高德地图下载器_Linux_x86_64`
+          
+          ### 🚀 使用方法
+          1. 下载对应平台的可执行文件
+          2. 双击运行（macOS/Linux用户可能需要先添加执行权限）
+          3. 按照界面提示进行操作
+          
+          ### 📋 更新内容
+          详细更新内容请查看下方的自动生成说明。
         files: |
           高德地图下载器_macOS_x86_64
           高德地图下载器_Windows_x86_64.exe
