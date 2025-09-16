@@ -17,7 +17,7 @@ from amap_downloader import AmapDownloader
 class MapDownloaderGUI:
     def __init__(self, root):
         self.root = root
-        self.root.title("高德地图下载器 v1.0")
+        self.root.title("高德地图下载器 v1.0.8")
         self.root.geometry("600x500")
         self.root.resizable(True, True)
         
