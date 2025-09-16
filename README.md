@@ -11,19 +11,33 @@
 - 💾 批量下载不同缩放级别的高清地图
 - 🎨 PNG格式无损高质量输出
 - ⚙️ 可配置的参数设置
+- 🖥️ 提供图形界面和命令行两种使用方式
 
-## 安装依赖
+## 📋 系统要求
+
+- Python 3.7+
+- 稳定的网络连接
+- 高德地图API密钥
+
+## 🚀 快速开始
+
+### 1. 安装依赖
 
 ```bash
+# 使用pip安装
 pip install -r requirements.txt
+
+# 或使用conda创建环境（推荐Mac用户）
+conda env create -f environment.yml
+conda activate amap-downloader
 ```
 
-## 配置API密钥
+### 2. 配置API密钥
 
 1. 访问 [高德开放平台](https://console.amap.com/) 注册账号
 2. 创建应用并选择 "Web服务" 平台
-3. 获取API Key
-4. 编辑 `config.py` 文件，将 `YOUR_AMAP_API_KEY_HERE` 替换为您的API密钥
+3. 获取API Key（参考 [高德官方接口文档](https://amap.apifox.cn/doc-540142)）
+4. 复制 `config_example.py` 为 `config.py`，并将 `YOUR_AMAP_API_KEY_HERE` 替换为您的API密钥
 
 ```python
 AMAP_CONFIG = {
@@ -32,9 +46,28 @@ AMAP_CONFIG = {
 }
 ```
 
-## 使用方法
+### 3. 运行程序
 
-### 基本使用
+**图形界面版本（推荐）**：
+```bash
+python map_downloader_gui.py
+```
+
+**命令行版本**：
+```bash
+python amap_downloader.py
+```
+
+## 📖 详细使用说明
+
+### 图形界面使用
+
+1. 运行 `python map_downloader_gui.py`
+2. 在界面中输入要下载的区域名称（如：吉州区）
+3. 选择缩放级别和输出目录
+4. 点击"开始下载"按钮
+
+### 命令行使用
 
 ```bash
 python amap_downloader.py
@@ -82,14 +115,14 @@ maps/
 - 质量: 2倍高清缩放
 - 大小: 单张2-10MB（根据地图复杂度）
 
-## 注意事项
+## ⚠️ 注意事项
 
 1. **API限制**: 高德地图API有调用频率限制，请合理使用
 2. **网络连接**: 需要稳定的网络连接来下载地图数据
 3. **存储空间**: 高分辨率地图文件较大，请确保有足够存储空间
 4. **API配额**: 免费API有每日调用次数限制
 
-## 故障排除
+## 🔧 故障排除
 
 ### 常见问题
 
@@ -105,6 +138,25 @@ A: 请确认区域名称正确，可以尝试使用完整名称如"江西省吉�
 **Q: 地图没有边界线**
 A: 部分区域可能没有详细的边界数据，这是正常现象
 
-## 许可证
+## 📚 参考资源
+
+- [高德开放平台](https://console.amap.com/)
+- [高德地图API官方文档](https://amap.apifox.cn/doc-540142)
+- [静态地图服务说明](https://amap.apifox.cn/doc-540142)
+
+## 📦 项目结构
+
+```
+amap-downloader/
+├── map_downloader_gui.py    # 图形界面版本
+├── amap_downloader.py       # 命令行版本
+├── config_example.py        # 配置文件示例
+├── requirements.txt         # Python依赖
+├── environment.yml          # Conda环境配置
+├── 使用说明.md              # 详细使用说明
+└── README.md               # 项目说明
+```
+
+## 📄 许可证
 
 本项目仅供学习和个人使用，请遵守高德地图API的使用条款。
