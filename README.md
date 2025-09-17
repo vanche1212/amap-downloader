@@ -446,7 +446,6 @@ amap-downloader/
 ### v1.0.9 (2024-12-16)
 - 🍎 修复macOS版本可执行文件的权限和安全问题
 - 🔧 优化GitHub Actions构建配置，为macOS添加特殊处理
-- 📝 添加macOS运行脚本 `run_macos.sh`，自动处理权限设置
 - 🛡️ 增加macOS代码签名和隔离属性处理
 - 📚 完善macOS用户使用说明和故障排除指南
 - 🔗 添加SSL/TLS相关依赖，提高网络请求稳定性
