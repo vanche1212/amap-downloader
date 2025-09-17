@@ -17,7 +17,7 @@ from amap_downloader import AmapDownloader
 class MapDownloaderGUI:
     def __init__(self, root):
         self.root = root
-        self.root.title("高德地图下载器 v1.0.8")
+        self.root.title("高德地图下载器 v1.1.1")
         self.root.geometry("600x500")
         self.root.resizable(True, True)
         
@@ -95,67 +95,49 @@ class MapDownloaderGUI:
         browse_btn = ttk.Button(dir_frame, text="浏览", command=self.browse_directory)
         browse_btn.grid(row=0, column=1)
         
-        # 下载选项
-        options_frame = ttk.LabelFrame(main_frame, text="下载选项", padding="10")
-        options_frame.grid(row=6, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=20)
-        options_frame.columnconfigure(0, weight=1)
+        # Zoom级别选择框架
+        zoom_frame = ttk.LabelFrame(main_frame, text="缩放级别设置", padding="10")
+        zoom_frame.grid(row=6, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=10)
         
-        # 地图尺寸选择
-        size_frame = ttk.Frame(options_frame)
-        size_frame.grid(row=0, column=0, sticky=(tk.W, tk.E), pady=5)
+        # Zoom级别选择模式
+        self.zoom_mode_var = tk.StringVar(value="default")
         
-        ttk.Label(size_frame, text="地图尺寸:").grid(row=0, column=0, sticky=tk.W)
-        self.size_var = tk.StringVar(value="2048*2048")
-        size_combo = ttk.Combobox(size_frame, textvariable=self.size_var, 
-                                 values=["2048*2048", "4096*4096", "6144*6144"], 
-                                 state="readonly", width=15)
-        size_combo.grid(row=0, column=1, padx=(10, 0))
+        # 默认级别选项
+        default_radio = ttk.Radiobutton(zoom_frame, text="默认级别 (推荐)", 
+                                       variable=self.zoom_mode_var, value="default")
+        default_radio.grid(row=0, column=0, sticky=tk.W, padx=5)
         
-        # 边界精度选择
-        precision_frame = ttk.Frame(options_frame)
-        precision_frame.grid(row=1, column=0, sticky=(tk.W, tk.E), pady=5)
+        # 自定义级别选项
+        custom_radio = ttk.Radiobutton(zoom_frame, text="自定义级别", 
+                                      variable=self.zoom_mode_var, value="custom",
+                                      command=self.on_zoom_mode_change)
+        custom_radio.grid(row=1, column=0, sticky=tk.W, padx=5)
         
-        ttk.Label(precision_frame, text="边界精度:").grid(row=0, column=0, sticky=tk.W)
-        self.precision_var = tk.StringVar(value="隔位显示")
-        precision_combo = ttk.Combobox(precision_frame, textvariable=self.precision_var,
-                                      values=["隔位显示", "高精度(500点)", "超高精度(1000点)"],
-                                      state="readonly", width=15)
-        precision_combo.grid(row=0, column=1, padx=(10, 0))
+        # 自定义zoom级别输入框
+        self.zoom_custom_frame = ttk.Frame(zoom_frame)
+        self.zoom_custom_frame.grid(row=2, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=5)
         
-        # 地图样式选择
-        style_frame = ttk.Frame(options_frame)
-        style_frame.grid(row=2, column=0, sticky=(tk.W, tk.E), pady=5)
+        ttk.Label(self.zoom_custom_frame, text="级别 (用逗号分隔):").grid(row=0, column=0, sticky=tk.W, padx=(20, 5))
         
-        ttk.Label(style_frame, text="地图样式:").grid(row=0, column=0, sticky=tk.W)
-        self.style_var = tk.StringVar(value="标准地图")
-        style_combo = ttk.Combobox(style_frame, textvariable=self.style_var,
-                                  values=["标准地图", "卫星地图", "路网地图"],
-                                  state="readonly", width=15)
-        style_combo.grid(row=0, column=1, padx=(10, 0))
+        self.zoom_levels_var = tk.StringVar(value="10,12,14")
+        self.zoom_entry = ttk.Entry(self.zoom_custom_frame, textvariable=self.zoom_levels_var, width=20)
+        self.zoom_entry.grid(row=0, column=1, sticky=tk.W, padx=5)
         
-        # 图层选项
-        layers_frame = ttk.Frame(options_frame)
-        layers_frame.grid(row=3, column=0, sticky=(tk.W, tk.E), pady=5)
+        # Zoom级别说明
+        zoom_help = ttk.Label(zoom_frame, text="级别越高越详细，建议范围：8-18", 
+                             foreground="gray", font=("Arial", 9))
+        zoom_help.grid(row=3, column=0, columnspan=2, sticky=tk.W, pady=(5, 0))
         
-        ttk.Label(layers_frame, text="图层选项:").grid(row=0, column=0, sticky=tk.W)
-        
-        # 交通图层复选框
-        self.traffic_var = tk.BooleanVar(value=False)
-        traffic_check = ttk.Checkbutton(layers_frame, text="实时交通", variable=self.traffic_var)
-        traffic_check.grid(row=0, column=1, padx=(10, 0))
-        
-        # 地名标注复选框
-        self.labels_var = tk.BooleanVar(value=True)
-        labels_check = ttk.Checkbutton(layers_frame, text="地名标注", variable=self.labels_var)
-        labels_check.grid(row=0, column=2, padx=(10, 0))
+        # 初始状态设置
+        self.on_zoom_mode_change()
         
         # 下载按钮
         download_btn = ttk.Button(main_frame, text="开始下载", command=self.start_download)
-        download_btn.grid(row=7, column=0, columnspan=2, pady=20)
+        download_btn.grid(row=8, column=0, columnspan=2, pady=20)
         
         # 进度条
         progress_frame = ttk.Frame(main_frame)
-        progress_frame.grid(row=8, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=10)
+        progress_frame.grid(row=9, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=10)
         progress_frame.columnconfigure(0, weight=1)
         
         self.progress_bar = ttk.Progressbar(progress_frame, variable=self.progress_var, 
@@ -165,12 +147,51 @@ class MapDownloaderGUI:
         # 状态标签
         status_label = ttk.Label(main_frame, textvariable=self.status_var, 
                                 foreground="blue", font=("Arial", 10))
-        status_label.grid(row=9, column=0, columnspan=2, pady=5)
+        status_label.grid(row=10, column=0, columnspan=2, pady=5)
         
         # 版权信息
         copyright_label = ttk.Label(main_frame, text="© 2024 高德地图下载器 - 基于高德开放平台API", 
                                    foreground="gray", font=("Arial", 8))
-        copyright_label.grid(row=10, column=0, columnspan=2, pady=(20, 0))
+        copyright_label.grid(row=11, column=0, columnspan=2, pady=(20, 0))
+    
+    def on_zoom_mode_change(self):
+        """处理zoom模式切换"""
+        if hasattr(self, 'zoom_mode_var'):
+            if self.zoom_mode_var.get() == "custom":
+                # 启用自定义输入框
+                for widget in self.zoom_custom_frame.winfo_children():
+                    widget.configure(state='normal')
+            else:
+                # 禁用自定义输入框
+                for widget in self.zoom_custom_frame.winfo_children():
+                    if isinstance(widget, ttk.Entry):
+                        widget.configure(state='disabled')
+    
+    def get_zoom_levels(self):
+        """获取用户选择的zoom级别"""
+        if self.zoom_mode_var.get() == "default":
+            return None  # 使用默认级别
+        else:
+            # 解析自定义级别
+            try:
+                zoom_str = self.zoom_levels_var.get().strip()
+                if not zoom_str:
+                    return None
+                
+                zoom_levels = []
+                for level in zoom_str.split(','):
+                    level = level.strip()
+                    if level:
+                        zoom_level = int(level)
+                        if 1 <= zoom_level <= 20:  # 合理的zoom级别范围
+                            zoom_levels.append(zoom_level)
+                        else:
+                            raise ValueError(f"Zoom级别 {zoom_level} 超出范围 (1-20)")
+                
+                return zoom_levels if zoom_levels else None
+            except ValueError as e:
+                messagebox.showerror("错误", f"Zoom级别格式错误: {e}")
+                return None
     
     def browse_directory(self):
         """浏览选择目录"""
@@ -243,64 +264,118 @@ class MapDownloaderGUI:
             self.status_var.set("正在初始化...")
             self.progress_var.set(10)
             
+            # 验证API密钥
+            api_key = self.api_key.get().strip()
+            if not api_key:
+                self.status_var.set("错误: API密钥为空")
+                self.root.after(0, lambda: messagebox.showerror("错误", "请输入有效的API密钥"))
+                return
+            
+            # 验证区域名称
+            district_name = self.district_name.get().strip()
+            if not district_name:
+                self.status_var.set("错误: 区域名称为空")
+                self.root.after(0, lambda: messagebox.showerror("错误", "请输入要下载的区域名称"))
+                return
+            
+            # 验证输出目录
+            output_dir_str = self.output_dir.get().strip()
+            if not output_dir_str:
+                self.status_var.set("错误: 输出目录为空")
+                self.root.after(0, lambda: messagebox.showerror("错误", "请选择输出目录"))
+                return
+            
             # 创建下载器
-            downloader = AmapDownloader(self.api_key.get().strip())
+            try:
+                downloader = AmapDownloader(api_key)
+            except Exception as e:
+                self.status_var.set("错误: 下载器初始化失败")
+                error_msg = str(e)
+                self.root.after(0, lambda: messagebox.showerror("错误", f"下载器初始化失败:\n{error_msg}"))
+                return
             
             # 创建输出目录
-            output_dir = Path(self.output_dir.get())
-            output_dir.mkdir(parents=True, exist_ok=True)
+            try:
+                output_dir = Path(output_dir_str)
+                output_dir.mkdir(parents=True, exist_ok=True)
+            except Exception as e:
+                self.status_var.set("错误: 无法创建输出目录")
+                error_msg = str(e)
+                self.root.after(0, lambda: messagebox.showerror("错误", f"无法创建输出目录:\n{error_msg}"))
+                return
             
             self.status_var.set("正在搜索区域...")
             self.progress_var.set(30)
             
-            # 修改下载器以支持不同精度
-            district_name = self.district_name.get().strip()
-            
-            # 根据精度选择修改代码逻辑
-            precision = self.precision_var.get()
-            if precision == "高精度(500点)":
-                # 临时修改下载器的简化逻辑
-                self.modify_downloader_precision(downloader, 500)
-            elif precision == "超高精度(1000点)":
-                self.modify_downloader_precision(downloader, 1000)
-            else:
-                # 使用默认的隔位显示
-                pass
-            
             self.status_var.set("正在下载地图...")
             self.progress_var.set(60)
             
-            # 获取图层设置
-            style_mapping = {
-                "标准地图": "normal",
-                "卫星地图": "satellite", 
-                "路网地图": "roadmap"
-            }
-            map_style = style_mapping.get(self.style_var.get(), "normal")
-            traffic = self.traffic_var.get()
-            labels = self.labels_var.get()
+            # 获取用户选择的zoom级别
+            zoom_levels = self.get_zoom_levels()
+            if zoom_levels is None and self.zoom_mode_var.get() == "custom":
+                # 自定义模式但解析失败
+                return
             
-            # 下载地图
-            result = downloader.download_district_map(
-                district_name, 
-                str(output_dir),
-                map_style=map_style,
-                traffic=traffic,
-                labels=labels
-            )
+            # 设置默认下载参数
+            map_style = "normal"  # 标准地图样式
+            traffic = False       # 不显示交通信息
+            labels = True         # 显示标注
+            
+            # 开始下载地图
+            try:
+                if zoom_levels:
+                    self.status_var.set(f"正在下载地图 (级别: {zoom_levels})...")
+                else:
+                    self.status_var.set("正在下载地图 (使用默认级别)...")
+                
+                result = downloader.download_district(
+                    district_name,
+                    str(output_dir),
+                    zoom_levels=zoom_levels,
+                    map_style=map_style,
+                    traffic=traffic,
+                    labels=labels
+                )
+            except Exception as e:
+                error_msg = str(e)
+                self.status_var.set(f"下载错误: {error_msg}")
+                self.root.after(0, lambda msg=error_msg: messagebox.showerror("错误", f"下载错误: {msg}"))
+                return
             
             self.progress_var.set(100)
             
-            if result:
-                self.status_var.set("下载完成！")
-                messagebox.showinfo("成功", f"地图下载完成！\n保存位置: {output_dir}")
+            # 处理下载结果 - 返回的是文件路径列表
+            if result and isinstance(result, list) and len(result) > 0:
+                # 下载成功，result是保存的文件路径列表
+                file_count = len(result)
+                self.status_var.set(f"下载完成！共保存 {file_count} 个文件")
+                
+                # 保存变量以避免lambda作用域问题
+                name = district_name
+                count = file_count
+                files = result
+                
+                # 构建简洁的成功消息
+                if count == 1:
+                    success_msg = f"{name} 下载完成！"
+                else:
+                    success_msg = f"{name} 下载完成！\n共 {count} 个文件"
+                
+                self.root.after(0, lambda: messagebox.showinfo("下载完成", success_msg))
+            elif result and isinstance(result, list) and len(result) == 0:
+                # 返回空列表，表示下载失败
+                self.status_var.set("下载失败: 没有成功下载任何文件")
+                self.root.after(0, lambda: messagebox.showerror("错误", "下载失败: 没有成功下载任何文件"))
             else:
-                self.status_var.set("下载失败")
-                messagebox.showerror("错误", "地图下载失败，请检查区域名称和网络连接")
+                # 返回None或其他异常情况
+                self.status_var.set("下载失败: 返回结果异常")
+                self.root.after(0, lambda: messagebox.showerror("错误", "下载失败: 返回结果异常"))
                 
         except Exception as e:
             self.status_var.set("下载出错")
-            messagebox.showerror("错误", f"下载过程中出现错误:\n{str(e)}")
+            # 使用root.after在主线程中显示错误消息
+            error_msg = str(e)  # 先保存错误消息
+            self.root.after(0, lambda: messagebox.showerror("错误", f"下载过程中出现错误:\n{error_msg}"))
         finally:
             self.progress_var.set(0)
     
