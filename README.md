@@ -59,16 +59,28 @@ python amap_downloader.py
 ```
 
 **macOS用户特别说明**：
-如果您下载的是GitHub Actions构建的macOS可执行文件，请使用提供的运行脚本：
-```bash
-# 使用运行脚本（推荐）
-./run_macos.sh
+如果您下载的是GitHub Actions构建的macOS可执行文件，请根据您的Mac类型选择对应版本：
 
-# 或手动设置权限后运行
-chmod +x amap-downloader_macOS_x86_64
-xattr -d com.apple.quarantine amap-downloader_macOS_x86_64
-./amap-downloader_macOS_x86_64
+**Intel Mac用户**：
+```bash
+# 下载 amap-downloader_macOS_Intel 文件后
+chmod +x amap-downloader_macOS_Intel
+xattr -d com.apple.quarantine amap-downloader_macOS_Intel
+./amap-downloader_macOS_Intel
 ```
+
+**Apple Silicon Mac用户**：
+```bash
+# 下载 amap-downloader_macOS_AppleSilicon 文件后
+chmod +x amap-downloader_macOS_AppleSilicon
+xattr -d com.apple.quarantine amap-downloader_macOS_AppleSilicon
+./amap-downloader_macOS_AppleSilicon
+```
+
+**如何确定您的Mac类型**：
+- 点击左上角苹果菜单 → "关于本机"
+- 如果显示"Intel"处理器，选择Intel版本
+- 如果显示"Apple M1/M2/M3"处理器，选择Apple Silicon版本
 
 ## 📖 详细使用说明
 
@@ -150,12 +162,17 @@ A: 部分区域可能没有详细的边界数据，这是正常现象
 
 **Q: macOS提示"无法打开应用程序"或"来自身份不明开发者"**
 A: 这是macOS的安全机制，请使用以下方法解决：
-1. 使用提供的 `run_macos.sh` 脚本（推荐）
-2. 或在终端中运行：`xattr -d com.apple.quarantine amap-downloader_macOS_x86_64`
-3. 或在系统偏好设置 > 安全性与隐私 > 通用 中点击"仍要打开"
+1. 在终端中运行：`xattr -d com.apple.quarantine 可执行文件名`
+2. 或在系统偏好设置 > 安全性与隐私 > 通用 中点击"仍要打开"
 
 **Q: macOS可执行文件没有执行权限**
-A: 在终端中运行：`chmod +x amap-downloader_macOS_x86_64`
+A: 在终端中运行：`chmod +x 可执行文件名`
+
+**Q: macOS提示"bad CPU type in executable"或"cannot execute binary file"**
+A: 这是架构不匹配问题，请确保下载了正确的版本：
+- Intel Mac用户：下载 `amap-downloader_macOS_Intel`
+- Apple Silicon Mac用户：下载 `amap-downloader_macOS_AppleSilicon`
+- 可通过"关于本机"查看您的Mac处理器类型
 
 ## 📚 参考资源
 
@@ -177,6 +194,14 @@ amap-downloader/
 ```
 
 ## 📝 更新日志
+
+### v1.0.10 (2024-12-17)
+- 🏗️ 修复GitHub Actions构建配置，解决macOS架构不匹配问题
+- 🍎 分别为Intel Mac和Apple Silicon Mac构建专用版本
+- 📦 更新文件命名：`amap-downloader_macOS_Intel` 和 `amap-downloader_macOS_AppleSilicon`
+- 🔧 添加PyInstaller的`--target-arch`参数，确保正确的架构编译
+- 📚 完善README文档，详细说明不同Mac架构的下载和使用方法
+- 🐛 修复"bad CPU type in executable"和"cannot execute binary file"错误
 
 ### v1.0.9 (2024-12-16)
 - 🍎 修复macOS版本可执行文件的权限和安全问题

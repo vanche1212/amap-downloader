@@ -18,17 +18,25 @@ jobs:
     strategy:
       matrix:
         include:
-          - os: macos-latest
+          - os: macos-13
             platform: macOS
             arch: x86_64
+            runner_arch: intel
+            executable_suffix: ""
+          - os: macos-latest
+            platform: macOS
+            arch: arm64
+            runner_arch: apple_silicon
             executable_suffix: ""
           - os: windows-latest
             platform: Windows
             arch: x86_64
+            runner_arch: x86_64
             executable_suffix: ".exe"
           - os: ubuntu-latest
             platform: Linux
             arch: x86_64
+            runner_arch: x86_64
             executable_suffix: ""
 
     steps:
@@ -56,11 +64,51 @@ jobs:
       run: |
         pyinstaller --onefile --windowed --name "amap-downloader" --hidden-import tkinter --hidden-import tkinter.ttk --hidden-import tkinter.messagebox --hidden-import tkinter.filedialog --hidden-import requests --hidden-import json --hidden-import pathlib --hidden-import threading --hidden-import urllib.parse --hidden-import urllib.request --hidden-import urllib.error --exclude-module matplotlib --exclude-module numpy --exclude-module pandas --exclude-module scipy --exclude-module PIL --exclude-module cv2 --exclude-module tensorflow --exclude-module torch --exclude-module jupyter --exclude-module IPython --add-data "config_example.py;." --add-data "使用说明.md;." map_downloader_gui.py
 
-    - name: 构建可执行文件 (macOS)
+    - name: 构建可执行文件 (macOS Intel)
+      if: matrix.os == 'macos-13'
+      run: |
+        # macOS Intel (x86_64) 构建
+        echo "构建 macOS Intel (x86_64) 版本"
+        pyinstaller --onefile --windowed --name "amap-downloader" \
+          --target-arch x86_64 \
+          --hidden-import tkinter \
+          --hidden-import tkinter.ttk \
+          --hidden-import tkinter.messagebox \
+          --hidden-import tkinter.filedialog \
+          --hidden-import requests \
+          --hidden-import json \
+          --hidden-import pathlib \
+          --hidden-import threading \
+          --hidden-import urllib.parse \
+          --hidden-import urllib.request \
+          --hidden-import urllib.error \
+          --hidden-import ssl \
+          --hidden-import certifi \
+          --hidden-import charset_normalizer \
+          --hidden-import idna \
+          --exclude-module matplotlib \
+          --exclude-module numpy \
+          --exclude-module pandas \
+          --exclude-module scipy \
+          --exclude-module PIL \
+          --exclude-module cv2 \
+          --exclude-module tensorflow \
+          --exclude-module torch \
+          --exclude-module jupyter \
+          --exclude-module IPython \
+          --add-data "config_example.py:." \
+          --add-data "使用说明.md:." \
+          --osx-bundle-identifier "com.amapdownloader.app" \
+          --codesign-identity "-" \
+          map_downloader_gui.py
+
+    - name: 构建可执行文件 (macOS Apple Silicon)
       if: matrix.os == 'macos-latest'
       run: |
-        # macOS特殊处理：添加更多隐藏导入和macOS特定选项
+        # macOS Apple Silicon (arm64) 构建
+        echo "构建 macOS Apple Silicon (arm64) 版本"
         pyinstaller --onefile --windowed --name "amap-downloader" \
+          --target-arch arm64 \
           --hidden-import tkinter \
           --hidden-import tkinter.ttk \
           --hidden-import tkinter.messagebox \
@@ -93,11 +141,13 @@ jobs:
           map_downloader_gui.py
 
     - name: 设置macOS可执行文件权限
-      if: matrix.os == 'macos-latest'
+      if: startsWith(matrix.os, 'macos')
       run: |
         cd dist
         chmod +x amap-downloader
         echo "设置macOS可执行文件权限完成"
+        echo "文件架构信息："
+        file amap-downloader
         ls -la amap-downloader
 
     - name: 构建可执行文件 (Linux)
@@ -150,7 +200,17 @@ jobs:
             exit 1
           fi
         else
-          target_name="amap-downloader_${{ matrix.platform }}_${{ matrix.arch }}"
+          # 为macOS添加架构后缀以区分Intel和Apple Silicon版本
+          if [ "${{ matrix.platform }}" = "macOS" ]; then
+            if [ "${{ matrix.arch }}" = "x86_64" ]; then
+              target_name="amap-downloader_${{ matrix.platform }}_Intel"
+            else
+              target_name="amap-downloader_${{ matrix.platform }}_AppleSilicon"
+            fi
+          else
+            target_name="amap-downloader_${{ matrix.platform }}_${{ matrix.arch }}"
+          fi
+          
           # 查找可执行文件并重命名
           if [ -f "amap-downloader" ]; then
             echo "找到可执行文件: amap-downloader"
@@ -169,8 +229,8 @@ jobs:
     - name: 上传构建产物
       uses: actions/upload-artifact@v4
       with:
-        name: amap-downloader-${{ matrix.platform }}-${{ matrix.arch }}
-        path: dist/amap-downloader_${{ matrix.platform }}_${{ matrix.arch }}${{ matrix.executable_suffix }}
+        name: amap-downloader-${{ matrix.platform }}-${{ matrix.runner_arch }}
+        path: dist/amap-downloader_*
 
   release:
     needs: build
@@ -197,7 +257,8 @@ jobs:
           
           ### 📦 下载说明
           - **Windows用户**: 下载 `amap-downloader_Windows_x86_64.exe`
-          - **macOS用户**: 下载 `amap-downloader_macOS_x86_64`
+          - **macOS Intel用户**: 下载 `amap-downloader_macOS_Intel`
+          - **macOS Apple Silicon用户**: 下载 `amap-downloader_macOS_AppleSilicon`
           - **Linux用户**: 下载 `amap-downloader_Linux_x86_64`
           
           ### 🚀 使用方法
@@ -208,7 +269,8 @@ jobs:
           ### 📋 更新内容
           详细更新内容请查看下方的自动生成说明。
         files: |
-          amap-downloader_macOS_x86_64
+          amap-downloader_macOS_Intel
+          amap-downloader_macOS_AppleSilicon
           amap-downloader_Windows_x86_64.exe
           amap-downloader_Linux_x86_64
         draft: false
