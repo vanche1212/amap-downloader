@@ -37,7 +37,7 @@ conda activate amap-downloader
 1. 访问 [高德开放平台](https://console.amap.com/) 注册账号
 2. 创建应用并选择 "Web服务" 平台
 3. 获取API Key（参考 [高德官方接口文档](https://amap.apifox.cn/doc-540142)）
-4. 复制 `config_example.py` 为 `config.py`，并将 `YOUR_AMAP_API_KEY_HERE` 替换为您的API密钥
+4. 编辑 `config.py` 文件，将 `YOUR_AMAP_API_KEY_HERE` 替换为您的API密钥
 
 ```python
 AMAP_CONFIG = {
@@ -45,6 +45,8 @@ AMAP_CONFIG = {
     # ... 其他配置
 }
 ```
+
+**注意**：如果您是首次使用，可以参考 `config_example.py` 文件中的配置示例。
 
 ### 3. 运行程序
 

@@ -59,10 +59,15 @@ jobs:
         python --version
         pip list
 
+    - name: 准备配置文件
+      run: |
+        cp config_example.py config.py
+        echo "配置文件已创建"
+
     - name: 构建可执行文件 (Windows)
       if: matrix.os == 'windows-latest'
       run: |
-        pyinstaller --onefile --windowed --name "amap-downloader" --hidden-import tkinter --hidden-import tkinter.ttk --hidden-import tkinter.messagebox --hidden-import tkinter.filedialog --hidden-import requests --hidden-import json --hidden-import pathlib --hidden-import threading --hidden-import urllib.parse --hidden-import urllib.request --hidden-import urllib.error --exclude-module matplotlib --exclude-module numpy --exclude-module pandas --exclude-module scipy --exclude-module PIL --exclude-module cv2 --exclude-module tensorflow --exclude-module torch --exclude-module jupyter --exclude-module IPython --add-data "config_example.py;." --add-data "使用说明.md;." map_downloader_gui.py
+        pyinstaller --onefile --windowed --name "amap-downloader" --hidden-import tkinter --hidden-import tkinter.ttk --hidden-import tkinter.messagebox --hidden-import tkinter.filedialog --hidden-import requests --hidden-import json --hidden-import pathlib --hidden-import threading --hidden-import urllib.parse --hidden-import urllib.request --hidden-import urllib.error --exclude-module matplotlib --exclude-module numpy --exclude-module pandas --exclude-module scipy --exclude-module PIL --exclude-module cv2 --exclude-module tensorflow --exclude-module torch --exclude-module jupyter --exclude-module IPython --add-data "config.py;." --add-data "使用说明.md;." map_downloader_gui.py
 
     - name: 构建可执行文件 (macOS Intel)
       if: matrix.os == 'macos-13'
@@ -96,7 +101,7 @@ jobs:
           --exclude-module torch \
           --exclude-module jupyter \
           --exclude-module IPython \
-          --add-data "config_example.py:." \
+          --add-data "config.py:." \
           --add-data "使用说明.md:." \
           --osx-bundle-identifier "com.amapdownloader.app" \
           --codesign-identity "-" \
@@ -134,7 +139,7 @@ jobs:
           --exclude-module torch \
           --exclude-module jupyter \
           --exclude-module IPython \
-          --add-data "config_example.py:." \
+          --add-data "config.py:." \
           --add-data "使用说明.md:." \
           --osx-bundle-identifier "com.amapdownloader.app" \
           --codesign-identity "-" \
